@@ -1,4 +1,4 @@
-# LiDAR_sinkhole_detector
+# Cusson Open-source LiDAR Depression Scanner (COLDS)
 A tool created to take an input of an airborne LiDAR dataset of an area, and automatically detect potential sinkholes in that geographic area using QGIS, GRASS, and PDAL.
 
 # Installation Instructions
