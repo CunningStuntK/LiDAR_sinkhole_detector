@@ -38,7 +38,7 @@ A tool created to take an input of an airborne LiDAR dataset of an area, and aut
       - **pdal-libs**: PDAL: Point Data Abstraction Library (Runtime)
       - **python3-gdal**: The GDAL/OGR Python3 Bindings and Scripts
       - **python3-numpy**: Fundamental package for array computing in Python
-      - **python3-pdal: Point cloud data processing
+      - **python3-pdal**: Point cloud data processing Python API
       - **python3-pip**: The PyPA recommended tool for installing Python packages
       - **qgis-common**: QGIS (common)
       - **qgis-grass-plugin**: GRASS plugin for QGIS
@@ -48,11 +48,12 @@ A tool created to take an input of an airborne LiDAR dataset of an area, and aut
 
 ## Configuring Python
 14. Under the newly created Start Menu folder, select **OSGeo4W Shell**.
-15. In the command prompt that opens, run the following command:
+15. In the command prompt that opens, run the following commands:
 ```
-pip3 install pysimplegui
+pip3 install pysimplegui psutil
 ```
 16. Close the command prompt.
 17. In file browser, add the program files to the bin folder in the root directory selected in **step 5**.
     - If you intend to run the code from an IDE (i.e. PyCharm), use the **python-qgis.bat** file as the python interpreter for your IDE.
+      - *Anytime* a new package is installed with the OSGeo4W installer, the **python-qgis.bat** file from this package must be placed in the bin folder again.
 18. To run the program, run **python-COLDS.bat**
