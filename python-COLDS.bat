@@ -9,4 +9,4 @@ set VSI_CACHE=TRUE
 set VSI_CACHE_SIZE=1000000
 set QT_PLUGIN_PATH=%OSGEO4W_ROOT%\apps\qgis\qtplugins;%OSGEO4W_ROOT%\apps\qt5\plugins
 set PYTHONPATH=%OSGEO4W_ROOT%\apps\qgis\python;%OSGEO4W_ROOT%\apps\qgis\python\plugins;%OSGEO4W_ROOT%\apps\wbt;%PYTHONPATH%
-python Lidar_basic_Detector_1_1.py%*
+python Open-Source_LiDAR_Depression_Scanner.py%*

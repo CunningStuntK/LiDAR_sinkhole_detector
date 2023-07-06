@@ -1,6 +1,6 @@
 # =====================================================================================================================
 # Filename:     Open-Source_LiDAR_Depression_Scanner.py
-# Version:      1.1.0
+# Version:      1.1.1
 # Written by:   Keith Cusson                Date: Jun 2023
 # Description:  A tool to detect sinkholes in QGIS from a classified LiDAR point
 #               cloud. Based on NS_Sinkholes_Tool.tbx created by Mitch Maracle
@@ -54,7 +54,7 @@ shpDriver = ogr.GetDriverByName('ESRI Shapefile')
 # This class corresponds to project data
 class Project(object):
     # Version info
-    version = '1.1.0'
+    version = '1.1.1'
 
     # Project object constructor
     def __init__(self):
@@ -1787,24 +1787,30 @@ class DetectorGUI(object):
             temp_poly = processing.run('native:fixgeometries', arg_params)['OUTPUT']
             self.print(f'Check complete in {secFmt(time.time() - startTime)}')
 
-            # The water features will be erased from the AOI to create the processing area
-            self.print('Removing water features from AOI.')
-            if not os.path.exists(f'{sPath}/AOI_edited/'):
-                os.makedirs(f'{sPath}/AOI_edited')
+            # If water features have been added to the project combine them with the AOI file
+            if self.proj.waterFeatures.path != '':
+                # The water features will be erased from the AOI to create the processing area
+                self.print('Removing water features from AOI.')
+                if not os.path.exists(f'{sPath}/AOI_edited/'):
+                    os.makedirs(f'{sPath}/AOI_edited')
 
-            startTime = time.time()
-            arg_params = {'INPUT': self.proj.qgsProj.mapLayersByName('AOI')[0],
-                          'OVERLAY': temp_poly,
-                          'OUTPUT': f'{sPath}/AOI_edited/AOI_edited.shp'}
+                startTime = time.time()
+                arg_params = {'INPUT': self.proj.qgsProj.mapLayersByName('AOI')[0],
+                              'OVERLAY': temp_poly,
+                              'OUTPUT': f'{sPath}/AOI_edited/AOI_edited.shp'}
 
-            processing.run('qgis:difference', arg_params)
-            clip_AOI = ShapeFile()
-            clip_AOI(f'{sPath}/AOI_edited/AOI_edited.shp', 'Edited AOI')
-            clip_AOI.createQgsLayer()
-            self.print(f'AOI clipped in {secFmt(time.time() - startTime)}\n')
+                processing.run('qgis:difference', arg_params)
+                clip_AOI = ShapeFile()
+                clip_AOI(f'{sPath}/AOI_edited/AOI_edited.shp', 'Edited AOI')
+                clip_AOI.createQgsLayer()
+                self.print(f'AOI clipped in {secFmt(time.time() - startTime)}\n')
 
-            # Clip the preliminary sinkhole raster with the edited AOI to only process areas of interest.
-            self.print('Clipping preliminary sinkhole raster.')
+                # Clip the preliminary sinkhole raster with the edited AOI to only process areas of interest.
+                self.print('Clipping preliminary sinkhole raster.')
+
+            # If water features have not been added to the project, set the AOI as the clip polygon
+            else:
+                clip_AOI = self.proj.AOI
 
             startTime = time.time()
             arg_params = {'INPUT': temp_rast,
