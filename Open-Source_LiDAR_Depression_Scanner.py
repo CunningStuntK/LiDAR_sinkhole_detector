@@ -1,5 +1,6 @@
 # =====================================================================================================================
-# Filename:     LiDAR_Basic_Detector_1_1.py
+# Filename:     Open-Source_LiDAR_Depression_Scanner.py
+# Version:      1.1.0
 # Written by:   Keith Cusson                Date: Jun 2023
 # Description:  A tool to detect sinkholes in QGIS from a classified LiDAR point
 #               cloud. Based on NS_Sinkholes_Tool.tbx created by Mitch Maracle
