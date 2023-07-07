@@ -1,7 +1,7 @@
 # =====================================================================================================================
 # Filename:     Open-Source_LiDAR_Depression_Scanner.py
-# Version:      1.1.1
-# Written by:   Keith Cusson                Date: Jun 2023
+# Version:      1.1.3
+# Written by:   Keith Cusson                Date: Jul 2023
 # Description:  A tool to detect sinkholes in QGIS from a classified LiDAR point
 #               cloud. Based on NS_Sinkholes_Tool.tbx created by Mitch Maracle
 #               in ArcGIS Pro.
@@ -45,6 +45,7 @@ Gui.theme('Dark Blue 3')
 Gui.set_options(font=('Arial', 11))
 
 # Set OSGEO shapefile driver
+ogr.UseExceptions()                                     # Can be removed when GDAL 4.0 is released.
 shpDriver = ogr.GetDriverByName('ESRI Shapefile')
 
 
@@ -54,7 +55,7 @@ shpDriver = ogr.GetDriverByName('ESRI Shapefile')
 # This class corresponds to project data
 class Project(object):
     # Version info
-    version = '1.1.1'
+    version = '1.1.3'
 
     # Project object constructor
     def __init__(self):
@@ -1804,6 +1805,7 @@ class DetectorGUI(object):
                 clip_AOI = ShapeFile()
                 clip_AOI(f'{sPath}/AOI_edited/AOI_edited.shp', 'Edited AOI')
                 clip_AOI.createQgsLayer()
+                clip_layer = clip_AOI.qObj
                 self.print(f'AOI clipped in {secFmt(time.time() - startTime)}\n')
 
                 # Clip the preliminary sinkhole raster with the edited AOI to only process areas of interest.
@@ -1811,14 +1813,14 @@ class DetectorGUI(object):
 
             # If water features have not been added to the project, set the AOI as the clip polygon
             else:
-                clip_AOI = self.proj.AOI
+                clip_layer = self.proj.AOI.qObj
 
             startTime = time.time()
             arg_params = {'INPUT': temp_rast,
-                          'MASK': clip_AOI.qObj,
-                          'SOURCE_CRS': clip_AOI.qObj.crs(),
-                          'TARGET_CRS': clip_AOI.qObj.crs(),
-                          'OUTPUT': f'{rPath}/{self.proj.fileName[:-5]}_diff_clipped.tif'}
+                          'MASK': clip_layer,
+                          'SOURCE_CRS': self.proj.qgsProj.crs(),
+                          'TARGET_CRS': self.proj.qgsProj.crs(),
+                          'OUTPUT': f'{rPath}/{name}_diff_clipped.tif'}
 
             temp_rast = processing.run('gdal:cliprasterbymasklayer', arg_params)['OUTPUT']
             self.print(f'Sinkhole raster clipped in {secFmt(time.time() - startTime)}\n')
@@ -1830,7 +1832,7 @@ class DetectorGUI(object):
             arg_params = {'input': temp_rast,
                           'method': 0,
                           'size': 3,
-                          'output': f'{rPath}/{self.proj.fileName[:-5]}_filt.tif'}
+                          'output': f'{rPath}/{name}_filt.tif'}
 
             temp_rast = processing.run('grass7:r.neighbors', arg_params)['output']
             self.print(f'Sinkhole raster smoothed in {secFmt(time.time() - startTime)}\n')
@@ -1848,7 +1850,7 @@ class DetectorGUI(object):
             arg_params = {'INPUT_RASTER': temp_rast,
                           'RASTER_BAND': 1,
                           'TABLE': ['0.15', f'{numpy.ceil(r_max) + 1}', '1'],
-                          'OUTPUT': f'{rPath}/{self.proj.fileName[:-5]}_reclass.tif'}
+                          'OUTPUT': f'{rPath}/{name}_reclass.tif'}
 
             temp_rast = processing.run('native:reclassifybytable', arg_params)['OUTPUT']
             self.print(f'Sinkhole raster reclassified in {secFmt(time.time() - startTime)}\n')
@@ -1857,8 +1859,8 @@ class DetectorGUI(object):
             self.print('Converting sinkhole raster to polygons.')
             startTime = time.time()
 
-            poly_root = f'{sPath}/{self.proj.fileName[:-5]}_sink_rast_poly'
-            poly_fn = f'{self.proj.fileName[:-5]}_sink_rast_poly.shp'
+            poly_root = f'{sPath}/{name}_sink_rast_poly'
+            poly_fn = f'{name}_sink_rast_poly.shp'
 
             if not os.path.exists(poly_root):
                 os.makedirs(poly_root)
