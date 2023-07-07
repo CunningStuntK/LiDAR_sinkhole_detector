@@ -53,7 +53,10 @@ A tool created to take an input of an airborne LiDAR dataset of an area, and aut
 pip3 install pysimplegui psutil
 ```
 16. Close the command prompt.
-17. In file browser, add the program files to the bin folder in the root directory selected in **step 5**.
-    - If you intend to run the code from an IDE (i.e. PyCharm), use the **python-qgis.bat** file as the python interpreter for your IDE.
-      - *Anytime* a new package is installed with the OSGeo4W installer, the **python-qgis.bat** file from this package must be placed in the bin folder again.
-18. To run the program, run **python-COLDS.bat**
+17. In file browser, add the following files to the bin folder in the root directory selected in **step 5**:
+    - **Open-Source_LiDAR_Depression_Scanner.py**
+    - **python-COLDS.bat**
+    - ***Notes:***
+      - If you intend to run the code from an IDE (i.e. PyCharm), use the **python-qgis.bat** file as the python interpreter for your IDE.
+        - *Anytime* a new package is installed with the OSGeo4W installer, the **python-qgis.bat** file from this package must be placed in the bin folder again.
+19. To run the program, run **python-COLDS.bat**
