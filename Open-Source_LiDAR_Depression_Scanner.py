@@ -1777,18 +1777,19 @@ class DetectorGUI(object):
             layer.layer().renderer().setContrastEnhancement(enhancement)
             layer.layer().triggerRepaint()
 
-            # Ensure that the water features geometry has no geometric errors that would hamper processing
-            self.print('Checking water features for geometry errors')
-            startTime = time.time()
-            arg_params = {'INPUT': self.proj.qgsProj.mapLayersByName('Water Features')[0],
-                          'METHOD': 1,
-                          'OUTPUT': 'TEMPORARY_OUTPUT'}
-
-            temp_poly = processing.run('native:fixgeometries', arg_params)['OUTPUT']
-            self.print(f'Check complete in {secFmt(time.time() - startTime)}')
-
             # If water features have been added to the project combine them with the AOI file
             if self.proj.waterFeatures.path != '':
+
+                # Ensure that the water features geometry has no geometric errors that would hamper processing
+                self.print('Checking water features for geometry errors')
+                startTime = time.time()
+                arg_params = {'INPUT': self.proj.qgsProj.mapLayersByName('Water Features')[0],
+                              'METHOD': 1,
+                              'OUTPUT': 'TEMPORARY_OUTPUT'}
+
+                temp_poly = processing.run('native:fixgeometries', arg_params)['OUTPUT']
+                self.print(f'Check complete in {secFmt(time.time() - startTime)}')
+
                 # The water features will be erased from the AOI to create the processing area
                 self.print('Removing water features from AOI.')
                 if not os.path.exists(f'{sPath}/AOI_edited/'):
