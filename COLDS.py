@@ -22,6 +22,7 @@ from qgis.core import *
 import re
 from scipy import ndimage
 from shapely import Polygon, box
+import subprocess
 from time import time, sleep
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ qgs.initQgis()                                              # Initialize QGIS
 
 qgs.setStyle('Fusion')                                      # Set the application style
 
-
+qgs_exe = f'{os.environ.get("OSGEO4W_ROOT", "")}/bin/qgis-ltr-bin.exe'
 # =====================================================================================================================
 # CLASSES
 # =====================================================================================================================
@@ -944,7 +945,7 @@ class Colds(gui.MainWindow):
         # Retrieve the layers available in the project's geopackage, and select the ones that contain depressions
         path_vec: Path = Path(self.qgs_proj.fileName()).with_suffix('.gpkg')
         df_lyrs: pd.DataFrame = gpd.list_layers(path_vec)
-        df_lyrs = df_lyrs[df_lyrs['name'].str.contains('Depressions')]
+        df_lyrs = df_lyrs[df_lyrs['name'].str.contains('Depressions', regex=False)]
 
         # Retrieve the QGIS project tree root.
         root: QgsLayerTree = self.qgs_proj.layerTreeRoot()
@@ -1007,8 +1008,11 @@ class Colds(gui.MainWindow):
         self.qgs_proj.write()
 
         # Open the file with QGIS.
-        self.wgt_message.print_message('Opening project file in QGIS')
-        os.startfile(self.qgs_proj.fileName())
+        if Path(qgs_exe).is_file():
+            self.wgt_message.print_message('Opening project file in QGIS')
+            subprocess.Popen([qgs_exe, self.qgs_proj.fileName()], shell=True)
+        else:
+            self.wgt_message.print_message('Could not find QGIS executable. Open the project file in QGIS directly.')
 
 
 # =====================================================================================================================
@@ -1594,6 +1598,8 @@ def finalize_inputs(
         # Rename the cloud type field to the layer type field for standardization of outputs
         data.gdf_aoi.rename(columns={'cloud_type': 'layer_type'},
                             inplace=True)
+        data.gdf_aoi.set_crs(crs=proj_wkt,
+                             inplace=True)
         queue.put({'progress': (50, 0)})
     else:
         # Prepare the partial progress bar for new signals
@@ -1604,7 +1610,7 @@ def finalize_inputs(
             gdf_aoi: gpd.GeoDataFrame = gpd.read_file(aoi['filename'],
                                                       layer=aoi['name'])
             # Check the SRS of the input file, and set or reproject the data if required.
-            file_crs: pyproj.CRS = gdf_aoi.crs
+            file_crs: pyproj.CRS | None = gdf_aoi.crs
             if file_crs is None:
                 queue.put({
                     'msg': f'<b>WARNING: </b>Layer {aoi["name"]} in file {aoi.filename} has no spatial reference system'
@@ -1651,8 +1657,7 @@ def finalize_inputs(
         queue.put({'pbar_size': (np.count_nonzero(filt), 1)})
 
         for i, wf in data.gdf_vec_md[filt].iterrows():
-            # Read the file. Using the fiona engine will compensate for SRS mismatches between the water feature
-            # geometry and the area of interest bounding box.
+            # Read the file. Using the fiona engine will ensure that the bounding box is clipped using a matching CRS.
             gdf_wf: gpd.GeoDataFrame = gpd.read_file(wf['filename'],
                                                      layer=wf['name'],
                                                      bbox=data.gdf_aoi.geometry.boundary,
