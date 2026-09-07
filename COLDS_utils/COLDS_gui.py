@@ -1737,7 +1737,7 @@ class MainWindow(QMainWindow):
 
         :return:       None. Sets the no_cpus variable in place.
         """
-        self.no_cpus = action.text()
+        self.no_cpus = int(action.text())
 
     # ------------------------------------------------------------------------------------------------------------------
     # Table View
